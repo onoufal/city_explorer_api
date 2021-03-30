@@ -9,22 +9,25 @@ app.use(cors());
 ////////////////////////////////////////////////
 const handleLoc = (req, res) => {
   const location = require('./data/location.json');
-  location.forEach(elem => {
-    const locinfo = new Location(req.query.city, elem.display_name, elem.lat, elem.lon);
-    locations.push(locinfo);
-  });
-
-  locations.forEach(elem => {
-    const city = elem.formatted_query.split(',')[0];
-    if (city === req.query.city) {
-      // res.status(200).json(`lat: ${elem.lat}, long:${elem.long}`);
-      res.status(200).json(elem);
-
-    }
-  })
-
-
+  // location.forEach(elem => {
+  // const locinfo = new Location(req.query.city, elem.display_name, elem.lat, elem.lon);
+  // res.send(locinfo);
+  const locinfo = new Location(req.query.city, location);
+  res.send(locinfo);
 }
+// });
+
+// locations.forEach(elem => {
+//   const city = elem.formatted_query.split(',')[0];
+//   if (city === req.query.city) {
+//     // res.status(200).json(`lat: ${elem.lat}, long:${elem.long}`);
+//     res.status(200).json(elem);
+
+//   }
+// })
+
+
+// }
 app.get('/location', handleLoc);
 
 app.listen(PORT, () => {
@@ -32,9 +35,15 @@ app.listen(PORT, () => {
 });
 
 
-function Location(search_query, formatted_query, latitude, longitude) {
+// function Location(search_query, formatted_query, latitude, longitude) {
+//   this.search_query = search_query;
+//   this.formatted_query = formatted_query;
+//   this.latitude = latitude;
+//   this.longitude = longitude;
+// }
+function Location(search_query, location) {
   this.search_query = search_query;
-  this.formatted_query = formatted_query;
-  this.latitude = latitude;
-  this.longitude = longitude;
+  this.formatted_query = location[0].display_name;
+  this.latitude = location[0].lat;
+  this.longitude = location[0].lon;
 }
