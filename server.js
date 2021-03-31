@@ -1,4 +1,4 @@
-const locations = [];
+'use strict';
 
 const express = require('express');
 const cors = require('cors');
@@ -6,41 +6,44 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
-////////////////////////////////////////////////
+
+
 const handleLoc = (req, res) => {
   const location = require('./data/location.json');
-  // location.forEach(elem => {
-  // const locinfo = new Location(req.query.city, elem.display_name, elem.lat, elem.lon);
-  // res.send(locinfo);
   const locinfo = new Location(req.query.city, location);
-  res.send(locinfo);
+  try {
+    res.send(locinfo);
+  } catch (error) {
+    res.status(404).send(`Oooops! Something went wrong ${error}`);
+  }
 }
-// });
-
-// locations.forEach(elem => {
-//   const city = elem.formatted_query.split(',')[0];
-//   if (city === req.query.city) {
-//     // res.status(200).json(`lat: ${elem.lat}, long:${elem.long}`);
-//     res.status(200).json(elem);
-
-//   }
-// })
 
 
-// }
 app.get('/location', handleLoc);
+
+app.get('/weather', handleWeather);
+
+function handleWeather(req, res) {
+  const weather = require('./data/weather.json');
+  const weatherData = [];
+  weather.data.forEach(elem => {
+    weatherData.push(new Weather(elem.weather.description, elem.valid_date));
+  });
+  // console.log(weatherData);
+  res.status(200).json(weatherData);
+}
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
 
 
-// function Location(search_query, formatted_query, latitude, longitude) {
-//   this.search_query = search_query;
-//   this.formatted_query = formatted_query;
-//   this.latitude = latitude;
-//   this.longitude = longitude;
-// }
+
+function Weather(forecast, time) {
+  this.forecast = forecast;
+  this.time = time;
+}
+
 function Location(search_query, location) {
   this.search_query = search_query;
   this.formatted_query = location[0].display_name;
