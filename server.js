@@ -1,8 +1,11 @@
 'use strict';
 /********************************************************/
 let locations = {};
-let waetherData = {};
+let weatherData = {};
 let parks = {};
+
+let lat;
+let lon;
 /********************************************************/
 const express = require('express');
 const cors = require('cors');
@@ -23,6 +26,8 @@ const locationHandlar = (req, res) => {
     } else {
       superagent.get(url).then(data => {
         const geoData = data.body[0];
+        lat = geoData.lat;
+        lon = geoData.lon;
         const location = new Location(city, geoData);
         locations[url] = location;
         res.status(200).send(locations[url]);
@@ -46,22 +51,32 @@ app.get('*', handleError);
 function handleError(req, res) {
   res.status(404).send({ status: 404, respondText: 'sorry this page does not exist' });
 }
-
+/*****************************************************/
+/*****************************************************/
 function weatherHandlar(req, res) {
   try {
-    const weather = require('./data/weather.json');
-    const weatherData = [];
-    weather.data.forEach(elem => {
-      weatherData.push(new Weather(elem.weather.description, elem.valid_date));
-    });
-    // console.log(weatherData);
-    res.status(200).send(weatherData);
+    let key = process.env.WEATHER_API_KEY;
+    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${key}`;
+    if (weatherData[url]) {
+      res.status(200).send(weatherData[url]);
+    } else {
+      superagent.get(url).then(data => {
+        weatherData[url] = data.body.data.map(elem => {
+          return new Weather(elem.weather.description, elem.valid_date);
+
+          console.log(elem);
+        });
+
+        res.status(200).send(weatherData[url]);
+      });
+    }
   } catch (error) {
     res.status(500).send(`Oooops Error ${error}`);
   }
 }
 
-
+/*****************************************************/
+/*****************************************************/
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
